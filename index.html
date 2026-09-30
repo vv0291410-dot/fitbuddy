@@ -1,0 +1,153 @@
+# f<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitBuddy - Your Fitness Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{background:#0f0f0f;color:white;}
+header{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;background:#1a1a1a;position:sticky;top:0;z-index:10}
+.logo{font-size:24px;font-weight:700;color:#00ff88}
+.logo span{color:white}
+nav a{color:#ccc;margin-left:20px;text-decoration:none}
+nav a:hover{color:#00ff88}
+.hero{padding:60px 5%;display:flex;flex-wrap:wrap;align-items:center;gap:30px}
+.hero-text{flex:1;min-width:300px}
+.hero-text h1{font-size:48px;line-height:1.2}
+.hero-text h1 span{color:#00ff88}
+.hero-text p{color:#aaa;margin:20px 0}
+.btn{background:#00ff88;color:#000;padding:12px 25px;border-radius:30px;border:none;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.hero-img{flex:1;min-width:300px;text-align:center;font-size:120px}
+.container{padding:20px 5%;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.card{background:#1e1e1e;padding:25px;border-radius:20px;border:1px solid #2a2a2a}
+.card h3{margin-bottom:15px;color:#00ff88}
+input, select{width:100%;padding:12px;margin:8px 0 15px 0;background:#2a2a2a;border:none;border-radius:10px;color:white;outline:none}
+.result{margin-top:15px;padding:15px;background:#252525;border-radius:10px;text-align:center;font-weight:600}
+.workout-list{margin-top:15px}
+.workout-item{background:#2a2a2a;padding:10px 15px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between}
+footer{text-align:center;padding:30px;color:#555;margin-top:40px;border-top:1px solid #222}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Fit<span>Buddy</span></div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#tools">Tools</a>
+    <a href="https://github.com/vv0291410-dot/fitbuddy" target="_blank">GitHub</a>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero-text">
+    <h1>Track Your <span>Fitness</span> Journey</h1>
+    <p>Your personal companion for workouts, diet, and BMI. No login needed. Everything saved in your browser.</p>
+    <a href="#tools" class="btn">Get Started</a>
+  </div>
+  <div class="hero-img">💪🏋️‍♂️🔥</div>
+</section>
+
+<div class="container" id="tools">
+  
+  <div class="card">
+    <h3>⚖️ BMI Calculator</h3>
+    <label>Height (cm)</label>
+    <input type="number" id="height" placeholder="Ex: 170">
+    <label>Weight (kg)</label>
+    <input type="number" id="weight" placeholder="Ex: 65">
+    <button class="btn" style="width:100%" onclick="calcBMI()">Calculate BMI</button>
+    <div class="result" id="bmiResult">Enter details</div>
+  </div>
+
+  <div class="card">
+    <h3>🏋️ Today's Workout</h3>
+    <label>Exercise Name</label>
+    <input type="text" id="exName" placeholder="Ex: Pushups">
+    <label>Sets / Duration</label>
+    <input type="text" id="exSets" placeholder="Ex: 3 sets x 15">
+    <button class="btn" style="width:100%" onclick="addWorkout()">Add Workout</button>
+    <div class="workout-list" id="workoutList"></div>
+  </div>
+
+  <div class="card">
+    <h3>🥗 Calorie Tracker</h3>
+    <label>Food Item</label>
+    <input type="text" id="foodName" placeholder="Ex: Chicken Rice">
+    <label>Calories (kcal)</label>
+    <input type="number" id="foodCal" placeholder="Ex: 350">
+    <button class="btn" style="width:100%" onclick="addFood()">Add Food</button>
+    <div class="result" id="calResult">Total: 0 kcal</div>
+    <div class="workout-list" id="foodList"></div>
+  </div>
+
+</div>
+
+<footer>
+  Made with ❤️ by vv0291410-dot | FitBuddy © 2026
+</footer>
+
+<script>
+let totalCal = 0;
+let workouts = JSON.parse(localStorage.getItem('fit_workouts') || '[]');
+let foods = JSON.parse(localStorage.getItem('fit_foods') || '[]');
+
+function calcBMI(){
+  let h = document.getElementById('height').value;
+  let w = document.getElementById('weight').value;
+  if(!h || !w){ alert('Height Weight fill pannu da!'); return; }
+  let hm = h/100;
+  let bmi = (w/(hm*hm)).toFixed(1);
+  let status = '';
+  if(bmi<18.5) status='Underweight';
+  else if(bmi<24.9) status='Fit & Healthy';
+  else if(bmi<29.9) status='Overweight';
+  else status='Obese';
+  document.getElementById('bmiResult').innerHTML = `BMI: ${bmi} <br> ${status}`;
+}
+
+function addWorkout(){
+  let name = document.getElementById('exName').value;
+  let sets = document.getElementById('exSets').value;
+  if(!name) return;
+  workouts.push({name,sets});
+  localStorage.setItem('fit_workouts',JSON.stringify(workouts));
+  document.getElementById('exName').value=''; document.getElementById('exSets').value='';
+  renderWorkout();
+}
+function renderWorkout(){
+  let html='';
+  workouts.forEach((w,i)=>{
+    html+=`<div class="workout-item"><span><b>${w.name}</b> - ${w.sets}</span><span onclick="removeW(${i})" style="cursor:pointer;color:red">✕</span></div>`;
+  });
+  document.getElementById('workoutList').innerHTML=html;
+}
+function removeW(i){ workouts.splice(i,1); localStorage.setItem('fit_workouts',JSON.stringify(workouts)); renderWorkout(); }
+
+function addFood(){
+  let name=document.getElementById('foodName').value;
+  let cal=parseInt(document.getElementById('foodCal').value);
+  if(!name || !cal) return;
+  foods.push({name,cal});
+  localStorage.setItem('fit_foods',JSON.stringify(foods));
+  document.getElementById('foodName').value=''; document.getElementById('foodCal').value='';
+  renderFood();
+}
+function renderFood(){
+  let html=''; totalCal=0;
+  foods.forEach((f,i)=>{
+    totalCal+=f.cal;
+    html+=`<div class="workout-item"><span><b>${f.name}</b> - ${f.cal} kcal</span><span onclick="removeF(${i})" style="cursor:pointer;color:red">✕</span></div>`;
+  });
+  document.getElementById('foodList').innerHTML=html;
+  document.getElementById('calResult').innerHTML=`Total: ${totalCal} kcal`;
+}
+function removeF(i){ foods.splice(i,1); localStorage.setItem('fit_foods',JSON.stringify(foods)); renderFood(); }
+
+renderWorkout(); renderFood();
+</script>
+
+</body>
+</html>itbuddy
